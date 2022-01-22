@@ -163,10 +163,24 @@ ind_moved_in_same_year %>% ggplot(aes(x = year, y = num_ind_sameyear)) + geom_li
 
 
 # (3) Based on myear and move, identify whether or not household migrated at the year of survey. 
-
+library(ggplot2)
+myear_exist = data_time_spent %>% filter(year <= "2014")
+move_exist <- data_time_spent %>% filter(year > "2014")
+myear_migrated_exist = myear_exist$year - myear_exist$myear == 0 
+move_migrated_exist = move_exist$move == 2
+migrated_same_year <- data.frame(idmen = data_time_spent$idmen, idind = data_time_spent$idind,
+                                 year = data_time_spent$year, same_year = c(myear_migrated_exist, move_migrated_exist))
+head(migrated_same_year,10)
+migrated_same_year2 <- migrated_same_year %>% dplyr::group_by(year) %>% 
+                       dplyr::summarise(num_hh = n())
+num_migrated_same_year <- migrated_same_year %>% filter(same_year == 1) %>% dplyr::group_by(year) %>% dplyr::summarise(num_migrated = n())
+share_fam_migrated_same_year <- data.frame(2004:2019, migrated_same_year2$num_hh, num_migrated_same_year$num_migrated)
+share_fam_migrated_same_year %>% ggplot(aes(x = year, y = num_migrated/num_hh)) + geom_point() + labs(x = "The given Year", y = "Individuals Moving in That Survey Year")
 
 # (4) Mix the two plots you created above in one graph, clearly label the graph. Do you prefer one method over the other? Justify.
-
+data_combined <- data.frame(migrated_same_year, migrated_same_year2)
+ggplot(data_combined, aes(x = year)) + geom_point(data = num_migrated_same_year, aes(y = same_year)) +
+geom_point(data = num_migrated_same_year, aes(y = num_ind_sameyear2, size = 4))
 # (5) For households who migrate, find out how many households had at least one family member changed his/her profession or employment status.
 
 
